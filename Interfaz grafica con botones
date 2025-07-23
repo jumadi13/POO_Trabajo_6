@@ -1,0 +1,126 @@
+import tkinter as tk
+from tkinter import messagebox
+
+ARCHIVO = "datos.txt"
+
+def crear():
+    nombre = entry_nombre.get().strip()
+    numero = entry_numero.get().strip()
+
+    if not nombre or not numero:
+        messagebox.showwarning("Error", "Debe ingresar ambos campos.")
+        return
+
+    with open(ARCHIVO, "a") as f:
+        f.write(f"{nombre},{numero}\n")
+    messagebox.showinfo("Creado", f"Se ha añadido: {nombre} - {numero}")
+    limpiar_campos()
+
+def leer():
+    try:
+        with open(ARCHIVO, "r") as f:
+            contenido = f.readlines()
+
+        if not contenido:
+            messagebox.showinfo("Leer", "El archivo está vacío.")
+            return
+
+        salida = ""
+        for linea in contenido:
+            nombre, numero = linea.strip().split(",")
+            salida += f"{nombre} - {numero}\n"
+
+        messagebox.showinfo("Datos almacenados", salida)
+
+    except FileNotFoundError:
+        messagebox.showwarning("Error", "Archivo no encontrado.")
+
+def actualizar():
+    nombre = entry_nombre.get().strip()
+    nuevo_numero = entry_numero.get().strip()
+
+    if not nombre or not nuevo_numero:
+        messagebox.showwarning("Error", "Debe ingresar ambos campos.")
+        return
+
+    actualizado = False
+    lineas_actualizadas = []
+
+    try:
+        with open(ARCHIVO, "r") as f:
+            lineas = f.readlines()
+
+        for linea in lineas:
+            n, num = linea.strip().split(",")
+            if n == nombre:
+                lineas_actualizadas.append(f"{nombre},{nuevo_numero}\n")
+                actualizado = True
+            else:
+                lineas_actualizadas.append(linea)
+
+        if actualizado:
+            with open(ARCHIVO, "w") as f:
+                f.writelines(lineas_actualizadas)
+            messagebox.showinfo("Actualizado", f"Número de {nombre} actualizado a {nuevo_numero}")
+        else:
+            messagebox.showinfo("No encontrado", f"No se encontró el nombre: {nombre}")
+
+    except FileNotFoundError:
+        messagebox.showwarning("Error", "Archivo no encontrado.")
+    
+    limpiar_campos()
+
+def eliminar():
+    nombre = entry_nombre.get().strip()
+    if not nombre:
+        messagebox.showwarning("Error", "Ingrese el nombre a eliminar.")
+        return
+
+    eliminado = False
+    lineas_restantes = []
+
+    try:
+        with open(ARCHIVO, "r") as f:
+            lineas = f.readlines()
+
+        for linea in lineas:
+            n, num = linea.strip().split(",")
+            if n == nombre:
+                eliminado = True
+            else:
+                lineas_restantes.append(linea)
+
+        if eliminado:
+            with open(ARCHIVO, "w") as f:
+                f.writelines(lineas_restantes)
+            messagebox.showinfo("Eliminado", f"Se eliminó a: {nombre}")
+        else:
+            messagebox.showinfo("No encontrado", f"No se encontró el nombre: {nombre}")
+
+    except FileNotFoundError:
+        messagebox.showwarning("Error", "Archivo no encontrado.")
+    
+    limpiar_campos()
+
+def limpiar_campos():
+    entry_nombre.delete(0, tk.END)
+    entry_numero.delete(0, tk.END)
+
+ventana = tk.Tk()
+ventana.title("CRUD con Archivo de Texto")
+ventana.geometry("400x300")
+
+tk.Label(ventana, text="Nombre:").pack()
+entry_nombre = tk.Entry(ventana, width=30)
+entry_nombre.pack()
+
+tk.Label(ventana, text="Número:").pack()
+entry_numero = tk.Entry(ventana, width=30)
+entry_numero.pack()
+
+tk.Button(ventana, text="Create", command=crear).pack(pady=5)
+tk.Button(ventana, text="Read", command=leer).pack(pady=5)
+tk.Button(ventana, text="Update", command=actualizar).pack(pady=5)
+tk.Button(ventana, text="Delete", command=eliminar).pack(pady=5)
+
+ventana.mainloop()
